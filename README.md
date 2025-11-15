@@ -1,66 +1,66 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Cofre de Credenciais
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplicação construída com Laravel 11 + Filament 3 para centralizar credenciais corporativas com fluxo de auditoria completo. O projeto fornece CRUD de credenciais com criptografia, modais seguros para visualização de senhas, painel com indicadores em tempo real e relatórios de acesso.
 
-## About Laravel
+## Funcionalidades principais
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Cadastro de credenciais**: formulário dividido em seções (dados principais, segurança e observações) com validações, campo de senha revelável e mutator para criptografia automática.
+- **Listagem dinâmica**: tabela com pesquisa, filtros por sistema e ações de visualizar/editar/excluir. A visualização abre um modal compacto que exibe a senha descriptografada e oferece botão de cópia.
+- **Auditoria de visualização**: cada abertura do modal gera um registro em `credential_view_logs` com usuário, IP, rota, user agent e metadados adicionais. Os logs são exibidos em um recurso Filament somente leitura com filtros por credencial e usuário.
+- **Dashboard executivo**: cards indicam total de credenciais e total de logs. Um gráfico em área cobre 12 meses de cadastros de credenciais, ocupando toda a largura do painel.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Requisitos
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- PHP 8.2+
+- Composer 2+
+- Node.js 18+ e npm para assets (opcional em dev)
+- Banco SQLite (padrão) ou qualquer banco suportado pelo Laravel
 
-## Learning Laravel
+## Como executar localmente
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+1. Instale as dependências:
+   ```bash
+   composer install
+   npm install && npm run build # ou npm run dev para watch
+   ```
+2. Configure o `.env` (copie de `.env.example`) e gere a chave:
+   ```bash
+   php artisan key:generate
+   ```
+3. Execute as migrações e seeds básicos:
+   ```bash
+   php artisan migrate
+   ```
+4. Opcional: crie um usuário admin para o Filament.
+5. Inicie o servidor:
+   ```bash
+   php artisan serve
+   ```
+6. Acesse `http://localhost:8000/admin` e autentique-se.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## Estrutura de diretórios relevantes
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- `app/Filament/Resources/CredentialResource.php`: formulário e tabela principal de credenciais.
+- `app/Filament/Resources/CredentialViewLogResource.php`: visualização dos logs de auditoria.
+- `app/Filament/Pages/Dashboard.php` + `app/Filament/Widgets/*`: widgets do dashboard (indicadores e gráfico mensal).
+- `app/Models/Credential.php`: model com mutator/accessor de senha e relacionamentos.
+- `app/Models/CredentialViewLog.php`: model de logs.
 
-## Laravel Sponsors
+## Auditoria
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+A tabela `credential_view_logs` armazena todos os acessos à senha com os campos:
+- `credential_id`, `user_id`, `event`
+- `ip_address`, `user_agent`, `request_path`
+- `meta` (JSON com referer e session id)
 
-### Premium Partners
+Os registros são atomizados via `CredentialResource` sempre que o modal de senha é aberto, garantindo rastreabilidade completa.
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+## Próximos passos sugeridos
 
-## Contributing
+- Aplicar políticas adicionais (aprovação de usuários para visualizar senhas, MFA, etc.).
+- Adicionar exportação dos logs para CSV/Excel.
+- Implementar notificações automáticas ao detectar acessos suspeitos.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Licença
 
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Projeto distribuído sob a licença MIT. Veja `LICENSE` para detalhes.

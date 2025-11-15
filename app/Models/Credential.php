@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Auth;
 
@@ -70,5 +71,10 @@ class Credential extends Model
     public function updater()
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function viewLogs(): HasMany
+    {
+        return $this->hasMany(CredentialViewLog::class);
     }
 }

@@ -5,8 +5,10 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\CredentialResource\Pages;
 use App\Filament\Resources\CredentialResource\RelationManagers;
 use App\Models\Credential;
+use App\Models\CredentialViewLog;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\ComponentContainer;
 use Filament\Forms\Components\{Section, TextInput, Textarea};
 use Filament\Infolists\Components\{Section as InfolistSection, TextEntry};
 use Filament\Infolists\Components\TextEntry\TextEntrySize;
@@ -19,6 +21,8 @@ use Filament\Tables\Table;
 use Filament\Support\Enums\{Alignment, FontFamily, FontWeight, MaxWidth};
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class CredentialResource extends Resource
 {
@@ -131,6 +135,19 @@ class CredentialResource extends Resource
                 ->modalAlignment(Alignment::Center)
                 ->modalWidth(MaxWidth::Small)
                 ->modalCancelActionLabel('Fechar')
+                ->mountUsing(function (?ComponentContainer $form, Credential $record): void {
+                    CredentialViewLog::create([
+                        'credential_id' => $record->id,
+                        'user_id' => Auth::id(),
+                        'ip_address' => request()->ip(),
+                        'user_agent' => Str::limit((string) request()->userAgent(), 1024),
+                        'request_path' => request()->path(),
+                        'meta' => array_filter([
+                            'referer' => request()->headers->get('referer'),
+                            'session_id' => optional(request()->session())->getId(),
+                        ]),
+                    ]);
+                })
                 ->infolist(fn (Infolist $infolist): Infolist => $infolist
                     ->schema([
                         InfolistSection::make()
